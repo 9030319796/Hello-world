@@ -1,0 +1,3 @@
+---
+- name: Deploy the new WAR file to target servers
+  copy: src=webapp/target/webapp.war  dest=/opt/tomcat/webapps
