@@ -1,7 +1,7 @@
 pipeline{
     agent {
       node {
-	label 'slave_1'
+	label 'linux_slave_0.181'
     }
 }
 
@@ -20,7 +20,7 @@ pipeline{
 	}
         stage('Git Checkout'){
             steps{
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'github access', url: 'https://github.com/GoudSagar/Hello-World-Code.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github access', url: 'https://github.com/9030319796/Hello-world.git']]])
             }
         }
         stage('build'){
@@ -41,11 +41,11 @@ pipeline{
   
         stage ('Static Code Analysis') {
              environment {
-             scannerHome = tool 'SONAR_SCANNER'
+             scannerHome = tool 'sonar-server'
              }
              steps {
                 echo 'Running Static Code Analysis'
-                 withSonarQubeEnv('SONAR_HOME') {
+                 withSonarQubeEnv('sonar-server') {
                  sh '${scannerHome}/bin/sonar-scanner'
                  }
             }
@@ -68,7 +68,7 @@ pipeline{
         stage ('Tomcat Deployment') {
            steps {
              script {
-                 deploy adapters: [tomcat7(credentialsId: 'tomcat-credentials', path: '', url: 'http://52.15.212.198:8080')], contextPath: '/webapp-app', onFailure: false, war: 'webapp/target/webapp.war' 
+                 deploy adapters: [tomcat7(credentialsId: 'tomcat-credentials', path: '', url: 'http://192.168.29.18:8080')], contextPath: '/webapp-app', onFailure: false, war: 'webapp/target/webapp.war' 
                     }
                   }
            }
