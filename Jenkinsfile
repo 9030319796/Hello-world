@@ -28,8 +28,9 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonar-server') {
                      sh '''
-                     ${ScannerHome}/bin/sonar-scanner -Dsonar.projectKey=CICD-project1 \
-                      -Dsonar.projectName=CICD-project1 \
+                     $  $ScannerHome/bin/sonar-scanner -Dsonar.projectName=CICD-project1 \
+                      -Dsonar.projectKey=CICD-project1 \
+                      -X
                      '''
                    }
             }
