@@ -1,4 +1,5 @@
 pipeline {
+
     agent {
         label 'amazonvm_slave'
        }
@@ -47,4 +48,6 @@ pipeline {
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
- }
+}
+
+}
