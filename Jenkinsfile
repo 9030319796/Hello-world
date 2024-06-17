@@ -1,84 +1,50 @@
-pipeline{
+pipeline {
     agent {
-      node {
-	label 'linux_slave_0.181'
-    }
-}
-
+        label 'amazonvm_slave'
+       }
     tools {
-         maven 'MAVEN_HOME'
-         jdk 'JAVA_HOME'
+        jdk 'JAVA_HOME'
+        maven 'MAVEN_HOME'
+    }
+    environment {
+        ScannerHome = tool 'sonar-server'
     }
 
-    stages{
-        stage('pre-build step') {
+    stages {
+        stage('GIT Checkout') {
             steps {
-		sh '''
-                echo "Pre Build Step for Webhook Trigges the pipeline on push event"
-		'''
-	    }
-	}
-        stage('Git Checkout'){
-            steps{
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github access', url: 'https://github.com/9030319796/Hello-world.git']]])
+                git branch: 'main', url: 'https://github.com/9030319796/Hello-world.git'
             }
         }
-        stage('build'){
-            steps{
-               sh '''
-                mvn package
-                '''
+        
+        stage('Compile and Clean stage') {
+            steps {
+                sh 'mvn clean package'
             }
         }
-        stage ('Unit Test') {
-	        steps {
-                echo 'Running Unit Testing'
-                sh '''
-                mvn test
-                '''
-             }
-         }
-  
-        stage ('Static Code Analysis') {
-             environment {
-             scannerHome = tool 'sonar-server'
-             }
-             steps {
-                echo 'Running Static Code Analysis'
-                 withSonarQubeEnv('sonar-server') {
-                 sh '${scannerHome}/bin/sonar-scanner'
-                 }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar-server') {
+                     sh '''
+                     ${ScannerHome}/bin/sonar-scanner -Dsonar.projectKey = CICD-project1 /
+                      -Dsonar.projectName = CICD-project1 /
+                     '''
+                   }
+            }
+
+        }
+
+        stage('Qulity gate') {
+            steps {
+                waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
             }
         }
-	stage('Jfrog Artifact Upload') {
+
+        stage('OSWAP DP Check') {
             steps {
-              rtUpload (
-                serverId: 'jfrog_home',
-                spec: '''{
-                      "files": [
-                        {
-                          "pattern": "*.war",
-                           "target": "local-snapshots"
-                        }
-                    ]
-                }'''
-              )
-          }
+                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'owasp-dp-check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
         }
-        stage ('Tomcat Deployment') {
-           steps {
-             script {
-                 deploy adapters: [tomcat7(credentialsId: 'tomcat-credentials', path: '', url: 'http://192.168.29.18:8080')], contextPath: '/webapp-app', onFailure: false, war: 'webapp/target/webapp.war' 
-                    }
-                  }
-           }
-         stage('post-build step') {
-            steps {
-		sh '''
-                echo "Successfull Pipeline for Tomcat Deployment"
-		'''
-	    }
-	}
-    
-     }
-}
+ }
