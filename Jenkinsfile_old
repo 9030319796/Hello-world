@@ -1,7 +1,7 @@
 pipeline{
     agent {
       node {
-	label 'linux_slave_0.181'
+	label 'amazonvm_slave'
     }
 }
 
@@ -50,35 +50,35 @@ pipeline{
                  }
             }
         }
-	stage('Jfrog Artifact Upload') {
-            steps {
-              rtUpload (
-                serverId: 'jfrog_home',
-                spec: '''{
-                      "files": [
-                        {
-                          "pattern": "*.war",
-                           "target": "local-snapshots"
-                        }
-                    ]
-                }'''
-              )
-          }
-        }
-        stage ('Tomcat Deployment') {
-           steps {
-             script {
-                 deploy adapters: [tomcat7(credentialsId: 'tomcat-credentials', path: '', url: 'http://192.168.29.18:8080')], contextPath: '/webapp-app', onFailure: false, war: 'webapp/target/webapp.war' 
-                    }
-                  }
-           }
-         stage('post-build step') {
-            steps {
-		sh '''
-                echo "Successfull Pipeline for Tomcat Deployment"
-		'''
-	    }
-	}
+	// stage('Jfrog Artifact Upload') {
+    //         steps {
+    //           rtUpload (
+    //             serverId: 'jfrog_home',
+    //             spec: '''{
+    //                   "files": [
+    //                     {
+    //                       "pattern": "*.war",
+    //                        "target": "local-snapshots"
+    //                     }
+    //                 ]
+    //             }'''
+    //           )
+    //       }
+    //     }
+        // stage ('Tomcat Deployment') {
+        //    steps {
+        //      script {
+        //          deploy adapters: [tomcat7(credentialsId: 'tomcat-credentials', path: '', url: 'http://192.168.29.18:8080')], contextPath: '/webapp-app', onFailure: false, war: 'webapp/target/webapp.war' 
+        //             }
+        //           }
+        //    }
+    //      stage('post-build step') {
+    //         steps {
+	// 	sh '''
+    //             echo "Successfull Pipeline for Tomcat Deployment"
+	// 	'''
+	//     }
+	// }
     
      }
 }
