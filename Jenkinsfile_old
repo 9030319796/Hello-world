@@ -1,7 +1,7 @@
 pipeline{
     agent {
       node {
-	label 'linux_slave_0.181'
+	label 'amazonvm_slave'
     }
 }
 
